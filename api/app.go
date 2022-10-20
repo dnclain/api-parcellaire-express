@@ -147,23 +147,23 @@ func (a *App) initializeRoutes() {
 
 	_mayBeSecured.Use(mux.MiddlewareFunc(CorsMw("GET")))
 
-	_mayBeSecured.HandleFunc("/parcelle/{idu:"+iduRegex+"}", a.getById).Methods("GET")
+	_mayBeSecured.HandleFunc("/parcelle/{idu:"+iduRegex+"}", a.getById).Methods("GET", "OPTIONS")
 
 	_mayBeSecured.HandleFunc("/parcelle", a.findByPosition).Queries(
-		"pos", "{pos:"+posRegex+"}").Methods("GET")
+		"pos", "{pos:"+posRegex+"}").Methods("GET", "OPTIONS")
 
 	_mayBeSecured.HandleFunc("/parcelle", a.findByPositionSplit).Queries(
 		"lon", "{lon:"+lonRegex+"}",
-		"lat", "{lat:"+latRegex+"}").Methods("GET")
+		"lat", "{lat:"+latRegex+"}").Methods("GET", "OPTIONS")
 
 	_mayBeSecured.HandleFunc("/parcelle", a.findByBbox).Queries(
-		"bbox", "{bbox:"+bboxRegex+"}").Methods("GET")
+		"bbox", "{bbox:"+bboxRegex+"}").Methods("GET", "OPTIONS")
 
 	_mayBeSecured.HandleFunc("/parcelle", a.findByBboxSplit).Queries(
 		"lon_min", "{lon_min:"+lonRegex+"}",
 		"lat_min", "{lat_min:"+latRegex+"}",
 		"lon_max", "{lon_max:"+lonRegex+"}",
-		"lat_max", "{lat_max:"+latRegex+"}").Methods("GET")
+		"lat_max", "{lat_max:"+latRegex+"}").Methods("GET", "OPTIONS")
 
 	// handle no argument
 	a.Router.Handle("/parcelle", Use(LogMw).ThenFunc(a.error(http.StatusBadRequest, "Requête invalide")))

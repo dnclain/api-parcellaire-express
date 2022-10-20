@@ -142,43 +142,47 @@ func AuthMw(next http.Handler) http.Handler {
 			_w = statusWriter{ResponseWriter: w}
 		}
 
-		_auth := r.Header.Get("Authorization")
+		// OPTIONS is always authorized
+		if r.Method != "OPTIONS" {
 
-		if _auth == "" {
-			_w.WriteHeader(http.StatusUnauthorized)
-			_err := json.NewEncoder(&_w).Encode(GeneralMessage{
-				Message: "requireAuthorization",
-				Error:   true,
-				Literal: "Please provides correct Authorization header",
-			})
+			_auth := r.Header.Get("Authorization")
 
-			if _err != nil {
-				log.Panicf("🚨 Sorry, cannot output unauthorized error message : %v\n", _err)
+			if _auth == "" {
+				_w.WriteHeader(http.StatusUnauthorized)
+				_err := json.NewEncoder(&_w).Encode(GeneralMessage{
+					Message: "requireAuthorization",
+					Error:   true,
+					Literal: "Please provides correct Authorization header",
+				})
+
+				if _err != nil {
+					log.Panicf("🚨 Sorry, cannot output unauthorized error message : %v\n", _err)
+				}
+
+				return
 			}
 
-			return
-		}
+			// Supports Bearer or Token api key.
+			_auth = strings.Replace(_auth, "Bearer ", "", 1)
+			_auth = strings.Replace(_auth, "Token ", "", 1)
+			_auth = strings.TrimSpace(_auth)
 
-		// Supports Bearer or Token api key.
-		_auth = strings.Replace(_auth, "Bearer ", "", 1)
-		_auth = strings.Replace(_auth, "Token ", "", 1)
-		_auth = strings.TrimSpace(_auth)
+			if _auth != os.Getenv(ENV_API_KEY) {
+				_w.WriteHeader(http.StatusForbidden)
+				_err := json.NewEncoder(&_w).Encode(GeneralMessage{
+					Message: "unknownToken",
+					Error:   true,
+					Literal: "The token is incorrect",
+				})
 
-		if _auth != os.Getenv(ENV_API_KEY) {
-			_w.WriteHeader(http.StatusForbidden)
-			_err := json.NewEncoder(&_w).Encode(GeneralMessage{
-				Message: "unknownToken",
-				Error:   true,
-				Literal: "The token is incorrect",
-			})
+				if _err != nil {
+					log.Panicf("🚨 Sorry, cannot output auth error message : %v\n", _err)
+				}
 
-			if _err != nil {
-				log.Panicf("🚨 Sorry, cannot output auth error message : %v\n", _err)
+				return
 			}
 
-			return
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -206,6 +210,9 @@ func CorsMw(allowedMethods ...string) Middleware {
 
 				w.WriteHeader(http.StatusOK)
 				return
+			} else {
+				_headers := w.Header()
+				_headers.Add("Access-Control-Allow-Origin", "*")
 			}
 
 			next.ServeHTTP(w, r)
