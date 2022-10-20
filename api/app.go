@@ -140,12 +140,12 @@ func (a *App) initializeRoutes() {
 
 	_mayBeSecured.Use(LogMw)
 
+	_mayBeSecured.Use(mux.MiddlewareFunc(CorsMw("GET")))
+
 	if os.Getenv(ENV_API_KEY) != "" {
 		log.Printf("⭐️ Api key security is enabled")
 		_mayBeSecured.Use(AuthMw)
 	}
-
-	_mayBeSecured.Use(mux.MiddlewareFunc(CorsMw("GET")))
 
 	_mayBeSecured.HandleFunc("/parcelle/{idu:"+iduRegex+"}", a.getById).Methods("GET", "OPTIONS")
 
