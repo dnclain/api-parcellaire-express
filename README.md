@@ -46,6 +46,10 @@ Il est possible de décommenter le service `adminer` dans `docker-compose.yml` p
 
 ## Déploiement
 
+0. Créer un fichier docker-compose.yml comme suit :
+
+    `docker-compose -f docker-compose.common.yml -f docker-compose.dev.yml config > docker-compose.yml`
+
 1. Construction des images
 
     `docker-compose build`
@@ -86,7 +90,7 @@ Ces commandes s'appliquent pour un déploiement en production avec docker stack 
 
 3. Extraire la version avec les valeurs du fichier [`.env`]
 
-    `docker-compose -f docker-compose.common.yml -f docker-compose.stack config > docker-stack.yml`
+    `docker-compose -f docker-compose.common.yml -f docker-compose.stack.yml config > docker-stack.yml`
 
     Modifier le nom du réseau qui correspond à votre environnement directement dans  `docker-stack.yml`.
 
